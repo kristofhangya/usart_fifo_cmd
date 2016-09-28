@@ -10,15 +10,13 @@
 #include <avr/interrupt.h>
 #include "USART.h"
 
-uint8_t buffer[8]={0};
+uint8_t buffer[16]={0};
 uint8_t i=0;
 void LCD_Puts(char *s);
 void menu();
+void cmd();
 
 int main(){
-    _delay_ms(500);
-    _delay_ms(500);
-    _delay_ms(500);
 
     LCD_init();
 
@@ -26,24 +24,14 @@ int main(){
 
     uint8_t tmp;
     sei();
-
     menu();
 
     while(1){
+
         if(has_sen()){
-
             USART_get_sen(buffer);
-
             LCD_Puts(buffer);
-
-            USART_Transmit(12);
-            if(!(strcmp(buffer,"elso")))     {USART_Transmit_Puts(" azonositva->1");}
-            if(!(strcmp(buffer,"masodik")))  {USART_Transmit_Puts(" azonositva->2");}
-            if(!(strcmp(buffer,"harmadik"))) {USART_Transmit_Puts(" azonositva->3");}
-            if(!(strcmp(buffer,"negyedik"))) {USART_Transmit_Puts(" azonositva->4");}
-            if(!(strcmp(buffer,"help")))     {USART_Transmit_Puts(" azonositva->help");menu();}
-
-            USART_Transmit('>');
+            cmd();
         }
     }
 
@@ -61,14 +49,36 @@ void LCD_Puts(char *s){
 
 void menu(){
 
-    USART_Transmit_Puts("MENU");
+    USART_Transmit(12);
     USART_Transmit_Puts("");
-    USART_Transmit_Puts("1. elso");
-    USART_Transmit_Puts("2. masodik");
-    USART_Transmit_Puts("3. harmadik");
-    USART_Transmit_Puts("4. negyedik");
+    USART_Transmit_Puts("****MENU****");
+    USART_Transmit_Puts("");        //only /enter
+    USART_Transmit_Puts("1. first");
+    USART_Transmit_Puts("2. second");
+    USART_Transmit_Puts("3. third");
+    USART_Transmit_Puts("4. fourth");
     USART_Transmit_Puts("5. help");
+    USART_Transmit('>');
 }
 
+void cmd(){
+    uint8_t element=0;
+    USART_Transmit(12);
 
+    if(!(strcmp(buffer,"first"))    || (!(strcmp(buffer,"1"))))     {element = 1;}
+    if(!(strcmp(buffer,"second"))   || (!(strcmp(buffer,"2"))))     {element = 2;}
+    if(!(strcmp(buffer,"third"))    || (!(strcmp(buffer,"3"))))     {element = 3;}
+    if(!(strcmp(buffer,"fourth"))   || (!(strcmp(buffer,"4"))))     {element = 4;}
+    if(!(strcmp(buffer,"help"))     || (!(strcmp(buffer,"h"))))     {element = 5;}
+
+    switch(element){
+    case 1:USART_Transmit_Puts(" detected->1"); break;
+    case 2:USART_Transmit_Puts(" detected->2"); break;
+    case 3:USART_Transmit_Puts(" detected->3"); break;
+    case 4:USART_Transmit_Puts(" detected->4"); break;
+    case 5:USART_Transmit_Puts(" detected->help"); menu(); break;
+    default:USART_Transmit_Puts(" undetected->error");break;
+    }
+    USART_Transmit('>');
+}
 
